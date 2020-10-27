@@ -1,4 +1,5 @@
 import throttle from 'lodash/throttle';
+import animateRules from "./rules";
 
 export default class FullPageScroll {
   constructor() {
@@ -6,6 +7,8 @@ export default class FullPageScroll {
 
     this.screenElements = document.querySelectorAll(`.screen:not(.screen--result)`);
     this.menuElements = document.querySelectorAll(`.page-header__menu .js-menu-link`);
+    this.screenBackground = document.querySelector(`.screen--background`);
+    this.screenBackgroundClassName = `screen--background--active`;
 
     this.activeScreen = 0;
     this.onScrollHandler = this.onScroll.bind(this);
@@ -33,8 +36,43 @@ export default class FullPageScroll {
     this.changePageDisplay();
   }
 
+  isPrizesScreenActive() {
+    return this.screenElements[this.activeScreen].id === `prizes`;
+  }
+
+  isStoryScreenActive() {
+    return this.screenElements[this.activeScreen].id === `story`;
+  }
+
+  isRulesScreenActive() {
+    return this.screenElements[this.activeScreen].id === `rules`;
+  }
+
+  switchBackground() {
+    if (this.isPrizesScreenActive()) {
+      this.screenElements[this.activeScreen].classList.add(`screen--animationing`);
+
+      this.screenElements[this.activeScreen].addEventListener(`animationend`, (evt) => {
+        if (evt.animationName.match(/screen--prizes--bg-slide-up/)) {
+          this.screenElements[this.activeScreen].classList.remove(`screen--animationing`);
+        }
+      });
+    } else if (this.isStoryScreenActive()) {
+      this.screenElements[this.activeScreen].classList.add(`screen--animationing`);
+
+      this.screenElements[this.activeScreen].addEventListener(`animationend`, (evt) => {
+        if (evt.animationName.match(/screen--prizes--bg-slide-up/)) {
+          this.screenElements[this.activeScreen].classList.remove(`screen--animationing`);
+        }
+      });
+    }
+
+    animateRules(this.isRulesScreenActive());
+  }
+
   changePageDisplay() {
     this.changeVisibilityDisplay();
+    this.switchBackground();
     this.changeActiveMenuItem();
     this.emitChangeDisplayEvent();
   }
@@ -43,6 +81,7 @@ export default class FullPageScroll {
     this.screenElements.forEach((screen) => {
       screen.classList.add(`screen--hidden`);
       screen.classList.remove(`active`);
+      screen.classList.remove(`screen--animationing`);
     });
     this.screenElements[this.activeScreen].classList.remove(`screen--hidden`);
     this.screenElements[this.activeScreen].classList.add(`active`);
